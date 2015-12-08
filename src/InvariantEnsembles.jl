@@ -33,7 +33,7 @@ export InvariantEnsemble
 function orthonormalpolynomials(μ0,α::Vector,β::Vector,d)
     n=length(α)+1
 
-    p=Array(Fun{Chebyshev,Float64},n)
+    p=Array(Fun{typeof(Space(d)),Float64},n)
     p[1] = Fun([μ0],d)
     p[2] = multiplybyx(p[1])./β[1] - p[1].*α[1]./β[1]
     for k = 3:n
@@ -190,7 +190,7 @@ end
 
 ##  Construct the invariant ensemble kernel K_n(x,x)
 iekernel(q::Array{Float64,2},d)=iekernel(q,d,plan_chebyshevtransform(q[:,1]))
-function iekernel(q::Array{Float64,2},d,plan::Function)
+function iekernel(q::Array{Float64,2},d,plan)
     n=size(q)[1]
     m=size(q)[2]
     ret=zeros(n)
@@ -204,7 +204,6 @@ function iekernel(q::Array{Float64,2},d,plan::Function)
 end
 
 
-<<<<<<< 16c414b28d81a04c589c8ec5e66aa724f4e110f0
 samplespectra(str::AbstractString,n::Integer,m::Integer)=samplespectra(InvariantEnsemble(str,n),m)
 
 
@@ -238,7 +237,7 @@ end
 ## samplespectra is back end for eigvalrand
 samplespectra(q::Array{Float64,2},d)=samplespectra(q,d,plan_chebyshevtransform(q[:,1]),chebyshevpoints(size(q,1)))
 
-function samplespectra(q::Array{Float64,2},d,plan::Function,pts)
+function samplespectra(q::Array{Float64,2},d,plan,pts)
     n = size(q,2)
     r=Array(Float64,n)
 
@@ -248,7 +247,7 @@ function samplespectra(q::Array{Float64,2},d,plan::Function,pts)
         r[k] = samplecdf(normalizedcumsum!(iekernel(q,d,plan).coefficients/m))
         f=Float64[bary(q[:,j],pts,r[k]) for j = 1:m]
         r[k] = fromcanonical(d,r[k])
-        Q=null(f')
+        Q=nullspace(f')
         q=q*Q
     end
 
@@ -274,7 +273,7 @@ function samplespectra{F<:Fun}(p::Array{F})
         r
     else
         f=map(q->q[r],p)
-        Q=null(f')'
+        Q=nullspace(f')'
         [r ;samplespectra(Q*p)]
     end
 end
